@@ -75,9 +75,9 @@ const handleFileUpload = async (req: Request, res: Response): Promise<any> => {
     //Voces agregadas a cada fragmento
     const voicesAdded = podcastArray.map((pod, i) => {
       if (i % 2 === 0) {
-        return { ...pod, voice: "Chris" };
+        return { ...pod, voice: "Ruben Suarez - Expressive" };
       } else {
-        return { ...pod, voice: "Jessica" };
+        return { ...pod, voice: "Valeria" };
       }
     });
 

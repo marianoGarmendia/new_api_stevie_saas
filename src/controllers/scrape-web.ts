@@ -13,9 +13,9 @@ export const model = new ChatOpenAI({
 
 // const urlsForScrapping = [];
 
-// Carga el sitio web de Cinepolis Chile para obtener la cartelera de películas.
+// Carga el sitio web Para obtener la información solicitada
 export const loader = new FireCrawlLoader({
-  url: "https://www.universal-assistance.com/ar-es/viaje-seguro?utm_source=google&utm_medium=cpc&utm_campaign=_Genericos%20Arg&utm_term=universal%20assistance&gad_source=1&gclid=CjwKCAiAm-67BhBlEiwAEVftNlmKauKiVVi1q_thNroOyjSDGxikyOdbEH3DrY0WdHanSfPk0mWcUhoC4UIQAvD_BwE", // The URL to scrape
+  url: "https://naoskingdom.com/products/white-bull-creatina", // The URL to scrape
   // Optional, defaults to `FIRECRAWL_API_KEY` in your env.
   mode: "scrape", // The mode to run the crawler in. Can be "scrape" for single urls or "crawl" for all accessible subpages
   params: {
@@ -62,21 +62,77 @@ function textToPDF(text: string, fileName: string = "document.pdf") {
 }
 
 const systemMessage = new SystemMessage(`
-        Eres un asistente experto en procesar y filtrar información sobre asistencia de viajes. Tu tarea es analizar un texto dado, identificar y extraer únicamente la información relevante relacionada con la asistencia de viajes y que es lo mejor para los clientes. I  
-
-        Elimina todo contenido irrelevante o fuera del ámbito solicitado, como anuncios, promociones, reseñas personales, información técnica no relacionada directamente con los servicios prestados o datos que no se ajusten a la temática. El resultado debe estar limpio, organizado y listo para ser transcrito en un PDF de fácil lectura para su posterior uso en la creación de un podcast.  
+        Eres un asistente experto en procesar y filtrar información sobre suplementos deportivos. Tu tarea es analizar un texto dado, identificar y extraer únicamente la información relevante relacionada con los suplementos como la creatina y que es lo mejor para los clientes como:
+        - Instrucciones para tomarla
+        - Beneficios y ventajas
+        - Ingredientes
+        - ¿que es la creatina?
+        - ¿Cómo funciona?
+        
+        Elimina todo contenido irrelevante o fuera del ámbito solicitado, como anuncios, promociones, reseñas personales, información técnica no relacionada directamente con el suplemento en cuestión, o datos que no se ajusten a la temática. El resultado debe estar limpio, organizado y listo para ser transcrito en un PDF de fácil lectura para su posterior uso en la creación de un podcast.  
 
     `);
 
+const texto = `
+  ¡Descubre el poder de la creatina para maximizar tus entrenamientos!
+¿Sabías que la creatina es uno de los suplementos más estudiados y efectivos para mejorar el rendimiento físico? Hoy te contamos cómo funciona y por qué es el aliado perfecto para tus metas deportivas. 
+CREATINA
+Image of White Bull Creatina
+White Bull Creatina
+$22,990.00 $25,990.00
+VER CREATINA
+¿Qué es la creatina?
+
+La creatina es una sustancia natural que tu cuerpo produce y almacena principalmente en los músculos. Es clave para la producción de energía durante actividades de alta intensidad, como el levantamiento de pesas o los sprints.
+
+Beneficio principal: aumenta la disponibilidad de energía, permitiéndote rendir más en entrenamientos cortos e intensos.
+
+¿Cómo funciona?
+
+Cuando entrenas, tus músculos usan ATP (adenosina trifosfato) como fuente de energía. La creatina acelera la regeneración de ATP, lo que significa que tendrás más energía disponible para ejercicios explosivos y repetitivos.
+
+Principales beneficios de la creatina:
+
+- Aumenta tu fuerza y potencia: Ideal para entrenamientos de resistencia y fuerza.
+
+
+- Mejora tu rendimiento: Más repeticiones, más peso, mejores resultados.
+
+
+- Acelera la recuperación muscular: Reduce la fatiga entre series y entrenamientos.
+
+
+- Promueve el crecimiento muscular: Al mejorar tu rendimiento, apoyas el desarrollo de masa muscular magra.
+
+
+- Hidratación celular: Favorece la retención de agua en las células musculares, optimizando su volumen y función.
+
+¿Cómo tomar creatina?
+ Para resultados óptimos:
+
+ 
+- Toma 1 porción (aprox. 5g) de creatina monohidratada al día, disuelta en agua.
+ 
+- Consúmela después de entrenar o en cualquier momento del día, preferiblemente acompañada de una comida rica en carbohidratos para mejorar su absorción.
+
+Recuerda: Pequeños cambios,
+grandes resultados.
+`;
+
 const summarize = async (doc: any) => {
-  const response = await model.invoke([systemMessage, doc.pageContent]);
+  const response = await model.invoke([
+    systemMessage,
+    `${doc.pageContent}, ${texto}`,
+  ]);
 
   return response.content;
 };
 
 docs.forEach(async (doc, index) => {
   const response = await summarize(doc);
-  console.log(response.toString());
+  console.log("After summarize docs");
+
+  // console.log(response.toString());
 
   textToPDF(response.toString(), `document${index.toString()}.pdf`);
 });
