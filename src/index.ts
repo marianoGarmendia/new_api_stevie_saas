@@ -2,11 +2,30 @@ import path from "path";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import fs from "fs";
 
 import { userRouter } from "./Routes/users.route";
 import { fileRouter } from "./Routes/files.route";
-import { create_directory } from "../dir-create";
-create_directory();
+// import { create_directory } from "../dir-create";
+// create_directory();
+
+// Base path para la raíz del proyecto
+const rootDir = path.resolve(__dirname, "..");
+
+// Directorios a crear
+const directories = [
+  path.join(rootDir, "audios_finales/uploads/podcast"),
+  path.join(rootDir, "audios_temporales"),
+  path.join(rootDir, "uploads/podcast"),
+];
+
+// Crear directorios si no existen
+directories.forEach((dir) => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+    console.log(`Directorio creado: ${dir}`);
+  }
+});
 // origin: process.env.FRONTEND_URL || "http://localhost:5173" || "*"
 // const allowedOrigins = ["http://localhost:3000", "http://localhost:5173"];
 const app = express();
