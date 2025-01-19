@@ -8,22 +8,18 @@ import { fileRouter } from "./Routes/files.route";
 // origin: process.env.FRONTEND_URL || "http://localhost:5173" || "*"
 // const allowedOrigins = ["http://localhost:3000", "http://localhost:5173"];
 const app = express();
-const allowedOrigins = [
-  process.env.FRONTEND_URL, // URL de producción
-  "http://localhost:5173", // URL local para desarrollo
-];
+// const allowedOrigins = [
+//   process.env.FRONTEND_URL, // URL de producción
+//   "http://localhost:5173", // URL local para desarrollo
+// ];
+const FRONTEND_URL = process.env.FRONTEND_URL as string;
 
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (allowedOrigins.includes(origin) || !origin) {
-        // Permitir solicitudes desde orígenes válidos o solicitudes sin origen (como herramientas de prueba)
-        callback(null, true);
-      } else {
-        // Rechazar otros orígenes
-        callback(new Error("No permitido por CORS"));
-      }
-    },
+    origin: [
+      FRONTEND_URL, // Origen permitido
+      "http://localhost:5173", // Permitir localhost para desarrollo
+    ],
     credentials: true,
   })
 );
