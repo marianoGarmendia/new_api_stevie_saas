@@ -14,18 +14,20 @@ export const model = new ChatOpenAI({
 // const urlsForScrapping = [];
 
 // Carga el sitio web Para obtener la información solicitada
-export const loader = new FireCrawlLoader({
-  url: "https://naoskingdom.com/products/white-bull-creatina", // The URL to scrape
-  // Optional, defaults to `FIRECRAWL_API_KEY` in your env.
-  mode: "scrape", // The mode to run the crawler in. Can be "scrape" for single urls or "crawl" for all accessible subpages
-  params: {
-    // optional parameters based on Firecrawl API docs
-    // For API documentation, visit https://docs.firecrawl.dev
-  },
-});
+export const load_from_url = async (url: string) => {
+  const loader = new FireCrawlLoader({
+    url: url, // The URL to scrape
+    // Optional, defaults to `FIRECRAWL_API_KEY` in your env.
+    mode: "scrape", // The mode to run the crawler in. Can be "scrape" for single urls or "crawl" for all accessible subpages
+    params: {
+      // optional parameters based on Firecrawl API docs
+      // For API documentation, visit https://docs.firecrawl.dev
+    },
+  });
 
-const docs = await loader.load();
-
+  const docs = await loader.load();
+  return docs;
+};
 // const vectorStore = await loadDocs(docs);
 
 /**
@@ -61,17 +63,14 @@ function textToPDF(text: string, fileName: string = "document.pdf") {
   doc.save(fileName);
 }
 
-const systemMessage = new SystemMessage(`
-        Eres un asistente experto en procesar y filtrar información sobre suplementos deportivos. Tu tarea es analizar un texto dado, identificar y extraer únicamente la información relevante relacionada con los suplementos como la creatina y que es lo mejor para los clientes como:
-        - Instrucciones para tomarla
-        - Beneficios y ventajas
-        - Ingredientes
-        - ¿que es la creatina?
-        - ¿Cómo funciona?
-        
-        Elimina todo contenido irrelevante o fuera del ámbito solicitado, como anuncios, promociones, reseñas personales, información técnica no relacionada directamente con el suplemento en cuestión, o datos que no se ajusten a la temática. El resultado debe estar limpio, organizado y listo para ser transcrito en un PDF de fácil lectura para su posterior uso en la creación de un podcast.  
-
-    `);
+const systemMessage =
+  new SystemMessage(`Eres un experto en procesar y filtrar información de un PDF. Tu objetivo es convertir la información de un PDF en un mensaje persuasivo para un podcast, extrayendo la información más relevante y estructurándola de manera atractiva.
+- Destaca los puntos más importantes de la información.
+- Habla como de manera informativa pero persuasiva.
+- No menciones que es un podcast.
+- No menciones que es un PDF.
+- No menciones que es un mensaje.
+`);
 
 const texto = `
   ¡Descubre el poder de la creatina para maximizar tus entrenamientos!
@@ -120,22 +119,38 @@ grandes resultados.
 `;
 
 const summarize = async (doc: any) => {
-  const response = await model.invoke([
-    systemMessage,
-    `${doc.pageContent}, ${texto}`,
-  ]);
+  const response = await model.invoke([systemMessage, `${doc.pageContent}`]);
+  console.log("summarize response");
+  console.log(response.content);
 
   return response.content;
 };
 
-docs.forEach(async (doc, index) => {
-  const response = await summarize(doc);
+export const summarizeDocs = async (docs: any) => {
+  const response = await model.invoke([
+    systemMessage,
+    `${docs[0].pageContent}`,
+  ]);
+
   console.log("After summarize docs");
+  return response;
 
-  // console.log(response.toString());
+  // const response = await summarize(docs[0]);
+  // const text = docs.map(async (doc: any) => {
+  //   const response = await summarize(doc);
+  //   console.log("After summarize docs");
 
-  textToPDF(response.toString(), `document${index.toString()}.pdf`);
-});
+  //   console.log(response.toString());
+  //   return response.toString();
+
+  //   // textToPDF(response.toString(), `document${index.toString()}.pdf`);
+  // });
+  // console.log("After iteration docs");
+  // const res = await text;
+
+  // return res;
+};
+
 // docs.forEach((doc, index) => {
 //   textToPDF(doc.pageContent, `document${index}.pdf`);
 // });

@@ -5,7 +5,8 @@ import { type MessageContent } from "@langchain/core/messages";
 import { chatprompt_cine } from "./prompts";
 import { z } from "zod";
 
-export const promptPodcast = ChatPromptTemplate.fromTemplate(chatprompt_cine);
+// Crear prompt
+// export const promptPodcast = ChatPromptTemplate.fromTemplate(chatprompt_cine);
 
 const podcastSchema = z.array(
   z.object({
@@ -23,8 +24,21 @@ export const podcastParser =
 
 export const podcastTextFormater = async (
   texto: MessageContent,
-  model: any
+  model: any,
+  instructions: string
 ) => {
+  const promptPodcast =
+    ChatPromptTemplate.fromTemplate(`${instructions} /n ### Texto para formatear:
+
+{texto}
+
+### Ejemplo de formato:
+
+#### Instrucciones de salida estructurada de la respuesta:
+
+{format_instructions}
+ `);
+
   const chain = promptPodcast.pipe(model).pipe(podcastParser);
 
   const response = await chain.invoke({

@@ -5,6 +5,7 @@ import { podcastTextFormater } from "@/controllers/format-text-podcast";
 import { writeFileInLocal } from "@/writeFiles/writeFile";
 import { createAudioFileFromText } from "@/text-to-speech/text-to-speech-file";
 import { combineAudios } from "@/controllers/combine-audios";
+import { load_from_url, summarizeDocs } from "@/controllers/scrape-web";
 import { unlinkSync } from "fs";
 import fs from "fs";
 // const fs = Bun.file;
@@ -13,7 +14,6 @@ import { v4 as uuid } from "uuid";
 
 import path from "node:path";
 import multer from "multer";
-
 
 export const fileRouter = Router();
 
@@ -45,117 +45,239 @@ const storage = multer.diskStorage({
 // const upload = multer({ dest: "uploads/podcast" });
 const upload = multer({ storage: storage });
 const handleFileUpload = async (req: Request, res: Response): Promise<any> => {
+  console.log("req.body");
+  const { email, instructions, urlValue } = req.body;
+
+  console.log(req.body);
   try {
-    console.log(req.file);
+    if (urlValue) {
+      const docs = await load_from_url(urlValue);
+      const docsSummarized = await summarizeDocs(docs);
+      console.log("docsSummarized");
+      const podcastArray = await podcastTextFormater(
+        docsSummarized.content,
+        model,
+        instructions
+      );
+      // Borramos el archivo PDF de la carpeta upload luego de procesarlo
+      // fs.unlink(req.file.path, (err) => {
+      //   console.log("Archivo eliminado:", req.file?.path);
 
-    if (!req.file) {
-      return res.status(400).json({ error: "No se envió ningún archivo" });
-    }
-    // Extraigo el contenido del pdf
-    const pdfContent = await loadPDF(req.file.path);
-    // Enviarselo al modelo para que lo procese
-    const messageContent = await loadDocsFromPDF(pdfContent, model);
+      //   if (err) {
+      //     console.error(`Error al eliminar el archivo: ${req.file?.path}`, err);
+      //     return res
+      //       .status(500)
+      //       .send(
+      //         "Un error de limpieza ha ocurrido, por favor cargalo nuevamente"
+      //       );
+      //   }
+      // });
 
-    // Devuelve un array de objetos con la propiedad "text" y "voice"
-    const podcastArray = await podcastTextFormater(messageContent, model);
+      //Voces agregadas a cada fragmento
+      const voicesAdded = podcastArray.map((pod, i) => {
+        if (i % 2 === 0) {
+          return { ...pod, voice: "Ruben Suarez - Expressive" };
+        } else {
+          return { ...pod, voice: "Valeria" };
+        }
+      });
 
-    // Borramos el archivo PDF de la carpeta upload luego de procesarlo
-    fs.unlink(req.file.path, (err) => {
-      console.log("Archivo eliminado:", req.file?.path);
+      await writeFileInLocal(voicesAdded);
 
-      if (err) {
-        console.error(`Error al eliminar el archivo: ${req.file?.path}`, err);
-        return res
-          .status(500)
-          .send(
-            "Un error de limpieza ha ocurrido, por favor cargalo nuevamente"
+      const addedAudioFilesToArray = async (arr: any[]) => {
+        const audioFiles: string[] = [];
+
+        for (const section of arr) {
+          console.log(
+            `Generando audio para: "${section.text}" con la voz: ${section.voice}`
           );
+          const fileName = await createAudioFile({
+            text: section.text,
+            voice: section.voice,
+          });
+          audioFiles.push(fileName);
+        }
+        console.log("audioFiles");
+        console.log(audioFiles);
+
+        return audioFiles;
+      };
+
+      // Se trae todos los archivos de audio generados .mp3 , tengo las rutas para poder combinarlas
+      const audioArrayFiles = await addedAudioFilesToArray(voicesAdded);
+
+      console.log("audioArrayFiles");
+      console.log(audioArrayFiles);
+
+      const audioFilePathSave = path.normalize(
+        path.join(
+          process.cwd(),
+          `audios_finales`,
+          `uploads`,
+          `podcast`,
+          `${email}_final_podcast.mp3`
+        )
+      );
+
+      //Combinar los mp3 para un audio final
+      await combineAudios(audioArrayFiles, audioFilePathSave);
+
+      // const audioFilePath = path.normalize(
+      //   path.join(__dirname, `audios_finales/${req.file.path}_final_podcast.mp3`)
+      // );
+
+      // const audioFilePath = path.normalize(
+      //   path.join(
+      //     process.cwd(),
+      //     "audios_finales",
+      //     "uploads",
+      //     "podcast",
+      //     `${req.file.filename}_final_podcast.mp3`
+      //   )
+      // );
+      console.log("Ruta calculada del archivo:", audioFilePathSave);
+      console.log("filename: " + urlValue);
+      console.log("path: " + urlValue);
+
+      //Verifica si el archivo existe usando Bun
+      // Leer el archivo como Buffer
+
+      // Establecer encabezados para indicar tipo y descarga opcional
+      res.setHeader("Content-Type", "audio/mpeg");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="podcast.mp3"`
+      );
+      res.sendFile(audioFilePathSave, (err) => {
+        if (err) {
+          console.error("Error al enviar el archivo:", err);
+          res.status(500).send("Error al enviar el archivo");
+        } else {
+          fs.unlink(audioFilePathSave, (err) => {
+            if (err) console.error("Error al eliminar el archivo:", err);
+            else console.log("Archivo eliminado:", audioFilePathSave);
+          });
+        }
+      });
+    } else {
+      console.log(req.file);
+
+      if (!req.file) {
+        return res.status(400).json({ error: "No se envió ningún archivo" });
       }
-    });
+      // Extraigo el contenido del pdf
+      const pdfContent = await loadPDF(req.file.path);
+      // Enviarselo al modelo para que lo procese
+      const messageContent = await loadDocsFromPDF(pdfContent, model);
 
-    //Voces agregadas a cada fragmento
-    const voicesAdded = podcastArray.map((pod, i) => {
-      if (i % 2 === 0) {
-        return { ...pod, voice: "Ruben Suarez - Expressive" };
-      } else {
-        return { ...pod, voice: "Valeria" };
-      }
-    });
+      // Devuelve un array de objetos con la propiedad "text" y "voice"
+      const podcastArray = await podcastTextFormater(
+        messageContent,
+        model,
+        instructions
+      );
 
-    await writeFileInLocal(voicesAdded);
+      // Borramos el archivo PDF de la carpeta upload luego de procesarlo
+      fs.unlink(req.file.path, (err) => {
+        console.log("Archivo eliminado:", req.file?.path);
 
-    const addedAudioFilesToArray = async (arr: any[]) => {
-      const audioFiles: string[] = [];
+        if (err) {
+          console.error(`Error al eliminar el archivo: ${req.file?.path}`, err);
+          return res
+            .status(500)
+            .send(
+              "Un error de limpieza ha ocurrido, por favor cargalo nuevamente"
+            );
+        }
+      });
 
-      for (const section of arr) {
-        console.log(
-          `Generando audio para: "${section.text}" con la voz: ${section.voice}`
-        );
-        const fileName = await createAudioFile({
-          text: section.text,
-          voice: section.voice,
-        });
-        audioFiles.push(fileName);
-      }
-      console.log("audioFiles");
-      console.log(audioFiles);
+      //Voces agregadas a cada fragmento
+      const voicesAdded = podcastArray.map((pod, i) => {
+        if (i % 2 === 0) {
+          return { ...pod, voice: "Ruben Suarez - Expressive" };
+        } else {
+          return { ...pod, voice: "Valeria" };
+        }
+      });
 
-      return audioFiles;
-    };
+      await writeFileInLocal(voicesAdded);
 
-    // Se trae todos los archivos de audio generados .mp3 , tengo las rutas para poder combinarlas
-    const audioArrayFiles = await addedAudioFilesToArray(voicesAdded);
+      const addedAudioFilesToArray = async (arr: any[]) => {
+        const audioFiles: string[] = [];
 
-    console.log("audioArrayFiles");
-    console.log(audioArrayFiles);
+        for (const section of arr) {
+          console.log(
+            `Generando audio para: "${section.text}" con la voz: ${section.voice}`
+          );
+          const fileName = await createAudioFile({
+            text: section.text,
+            voice: section.voice,
+          });
+          audioFiles.push(fileName);
+        }
+        console.log("audioFiles");
+        console.log(audioFiles);
 
-    const audioFilePathSave = path.normalize(
-      path.join(
-        process.cwd(),
-        `audios_finales`,
-        `uploads`,
-        `podcast`,
-        `${req.file.filename}_final_podcast.mp3`
-      )
-    );
+        return audioFiles;
+      };
 
-    //Combinar los mp3 para un audio final
-    await combineAudios(audioArrayFiles, audioFilePathSave);
+      // Se trae todos los archivos de audio generados .mp3 , tengo las rutas para poder combinarlas
+      const audioArrayFiles = await addedAudioFilesToArray(voicesAdded);
 
-    // const audioFilePath = path.normalize(
-    //   path.join(__dirname, `audios_finales/${req.file.path}_final_podcast.mp3`)
-    // );
+      console.log("audioArrayFiles");
+      console.log(audioArrayFiles);
 
-    // const audioFilePath = path.normalize(
-    //   path.join(
-    //     process.cwd(),
-    //     "audios_finales",
-    //     "uploads",
-    //     "podcast",
-    //     `${req.file.filename}_final_podcast.mp3`
-    //   )
-    // );
-    console.log("Ruta calculada del archivo:", audioFilePathSave);
-    console.log("filename: " + req.file.filename);
-    console.log("path: " + req.file.path);
+      const audioFilePathSave = path.normalize(
+        path.join(
+          process.cwd(),
+          `audios_finales`,
+          `uploads`,
+          `podcast`,
+          `${req.file.filename}_final_podcast.mp3`
+        )
+      );
 
-    //Verifica si el archivo existe usando Bun
-    // Leer el archivo como Buffer
+      //Combinar los mp3 para un audio final
+      await combineAudios(audioArrayFiles, audioFilePathSave);
 
-    // Establecer encabezados para indicar tipo y descarga opcional
-    res.setHeader("Content-Type", "audio/mpeg");
-    res.setHeader("Content-Disposition", `attachment; filename="podcast.mp3"`);
-    res.sendFile(audioFilePathSave, (err) => {
-      if (err) {
-        console.error("Error al enviar el archivo:", err);
-        res.status(500).send("Error al enviar el archivo");
-      } else {
-        fs.unlink(audioFilePathSave, (err) => {
-          if (err) console.error("Error al eliminar el archivo:", err);
-          else console.log("Archivo eliminado:", audioFilePathSave);
-        });
-      }
-    });
+      // const audioFilePath = path.normalize(
+      //   path.join(__dirname, `audios_finales/${req.file.path}_final_podcast.mp3`)
+      // );
+
+      // const audioFilePath = path.normalize(
+      //   path.join(
+      //     process.cwd(),
+      //     "audios_finales",
+      //     "uploads",
+      //     "podcast",
+      //     `${req.file.filename}_final_podcast.mp3`
+      //   )
+      // );
+      console.log("Ruta calculada del archivo:", audioFilePathSave);
+      console.log("filename: " + req.file.filename);
+      console.log("path: " + req.file.path);
+
+      //Verifica si el archivo existe usando Bun
+      // Leer el archivo como Buffer
+
+      // Establecer encabezados para indicar tipo y descarga opcional
+      res.setHeader("Content-Type", "audio/mpeg");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="podcast.mp3"`
+      );
+      res.sendFile(audioFilePathSave, (err) => {
+        if (err) {
+          console.error("Error al enviar el archivo:", err);
+          res.status(500).send("Error al enviar el archivo");
+        } else {
+          fs.unlink(audioFilePathSave, (err) => {
+            if (err) console.error("Error al eliminar el archivo:", err);
+            else console.log("Archivo eliminado:", audioFilePathSave);
+          });
+        }
+      });
+    }
   } catch (error) {
     console.error("Error al enviar el archivo:", error);
     res.status(500).send("Error interno al procesar el archivo");

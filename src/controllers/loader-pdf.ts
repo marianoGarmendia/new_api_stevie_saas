@@ -1,13 +1,13 @@
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { SystemMessage, type MessageContent } from "@langchain/core/messages";
-import { system_prompt_cine } from "./prompts";
+import { system_prompt } from "./prompts";
 
 export const loadDocsFromPDF = async (
   content: string,
   model: any
 ): Promise<MessageContent> => {
   try {
-    const systemMessage = new SystemMessage(system_prompt_cine);
+    const systemMessage = new SystemMessage(system_prompt);
     const cleanText = await model.invoke([systemMessage, content]);
     return cleanText.content;
   } catch (error) {
