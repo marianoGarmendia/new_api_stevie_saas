@@ -5,6 +5,8 @@ import cookieParser from "cookie-parser";
 
 import { userRouter } from "./Routes/users.route";
 import { fileRouter } from "./Routes/files.route";
+import { create_directory } from "../dir-create";
+create_directory();
 // origin: process.env.FRONTEND_URL || "http://localhost:5173" || "*"
 // const allowedOrigins = ["http://localhost:3000", "http://localhost:5173"];
 const app = express();
