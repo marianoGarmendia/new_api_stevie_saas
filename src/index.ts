@@ -7,9 +7,22 @@ import { userRouter } from "./Routes/users.route";
 import { fileRouter } from "./Routes/files.route";
 // origin: process.env.FRONTEND_URL || "http://localhost:5173" || "*"
 const app = express();
+const allowedOrigins = [
+  process.env.FRONTEND_URL, // URL de producción
+  "http://localhost:5173",  // URL local para desarrollo
+];  
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173" ,
+    origin: (origin, callback)=>{
+      if (allowedOrigins.includes(origin) || !origin) {
+        // Permitir solicitudes desde orígenes válidos o solicitudes sin origen (como herramientas de prueba)
+        callback(null, true);
+      } else {
+        // Rechazar otros orígenes
+        callback(new Error("No permitido por CORS"));
+      }
+    },
     credentials: true,
   })
 );
