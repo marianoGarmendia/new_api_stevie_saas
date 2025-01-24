@@ -64,9 +64,9 @@ function textToPDF(text: string, fileName: string = "document.pdf") {
 }
 
 const systemMessage =
-  new SystemMessage(`Eres un experto en procesar y filtrar información de un PDF. Tu objetivo es convertir la información de un PDF en un mensaje persuasivo para un podcast, extrayendo la información.
+  new SystemMessage(`Eres un experto en procesar y filtrar información de un PDF. Tu objetivo es convertir la información de un PDF o de una URL en un mensaje persuasivo para un podcast, extrayendo la información.
 - Destaca los puntos más importantes de la información.
-- Haz un resumen de cada página.
+- Haz un resumen de cada página o sección del contexto.
 - El resumen debe ser con el titulo del texto y destaca lo mas importante de ese texto.
 - La información que extraigas debe ser clara y concisa.
 - Toda información que sea publicidad externa, numeros de página ignóralas.
