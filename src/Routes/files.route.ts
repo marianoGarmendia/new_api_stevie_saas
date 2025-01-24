@@ -196,7 +196,7 @@ const handleFileUpload = async (req: Request, res: Response): Promise<any> => {
         if (i % 2 === 0) {
           return { ...pod, voice: "Ruben Suarez - Expressive" };
         } else {
-          return { ...pod, voice: "Valeria - Friendly Woman" };
+          return { ...pod, voice: "Cristina Campos" };
         }
       });
 
