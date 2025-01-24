@@ -38,8 +38,9 @@ const FRONTEND_URL = process.env.FRONTEND_URL as string;
 app.use(
   cors({
     origin: 
-      process.env.FRONTEND_URL || // Origen permitido
-      "http://localhost:5173"// Permitir localhost para desarrollo
+    FRONTEND_URL
+       // Origen permitido
+      // "http://localhost:5173"// Permitir localhost para desarrollo
     ,
     credentials: true,
   })

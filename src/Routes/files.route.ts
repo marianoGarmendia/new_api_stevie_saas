@@ -78,11 +78,11 @@ const handleFileUpload = async (req: Request, res: Response): Promise<any> => {
         if (i % 2 === 0) {
           return { ...pod, voice: "Ruben Suarez - Expressive" };
         } else {
-          return { ...pod, voice: "Valeria" };
+          return { ...pod, voice: "Nathalia" };
         }
       });
 
-      await writeFileInLocal(voicesAdded);
+      // await writeFileInLocal(voicesAdded);
 
       const addedAudioFilesToArray = async (arr: any[]) => {
         const audioFiles: string[] = [];
@@ -200,7 +200,7 @@ const handleFileUpload = async (req: Request, res: Response): Promise<any> => {
         }
       });
 
-      await writeFileInLocal(voicesAdded);
+      // await writeFileInLocal(voicesAdded);
 
       const addedAudioFilesToArray = async (arr: any[]) => {
         const audioFiles: string[] = [];
