@@ -1,6 +1,6 @@
 import { unlinkSync } from "fs";
-import Bun from "bun";
-const fs = Bun.file;
+
+import { readFile, writeFile } from "fs/promises";
 
 export const combineAudios = async (files: any[], filename: string) => {
   try {
@@ -8,7 +8,7 @@ export const combineAudios = async (files: any[], filename: string) => {
     const buffers = await Promise.all(
       files.map(async (file) => {
         try {
-          return new Uint8Array(await fs(file).arrayBuffer());
+          return new Uint8Array(await readFile(file));
         } catch (err) {
           console.error(`Error al leer ${file}:`, err);
           throw err;
@@ -20,7 +20,7 @@ export const combineAudios = async (files: any[], filename: string) => {
     const combinedBuffer = Buffer.concat(buffers);
 
     // Escribir el archivo combinado
-    await Bun.write(filename, combinedBuffer as any);
+    await writeFile(filename, combinedBuffer as any);
     console.log("Archivos combinados exitosamente en: " + filename);
 
     // Eliminar los archivos originales

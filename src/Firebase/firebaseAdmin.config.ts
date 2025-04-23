@@ -1,6 +1,8 @@
 import { initializeApp, cert } from "firebase-admin/app";
 
 import { getFirestore } from "firebase-admin/firestore";
+import dotenv from "dotenv";
+dotenv.config();
 
 export const app = initializeApp({
   credential: cert({

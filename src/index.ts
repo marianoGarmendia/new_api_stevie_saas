@@ -1,6 +1,5 @@
 import path from "path";
-import * as express from "express";
-
+import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import fs from "fs";
@@ -10,10 +9,15 @@ import { fileRouter } from "./Routes/files.route";
 // import { create_directory } from "../dir-create";
 // create_directory();
 
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const _dirname = path.dirname(__filename);
+
 dotenv.config();
 
 // Base path para la raíz del proyecto
-const rootDir = path.resolve(__dirname, "..");
+const rootDir = path.resolve(_dirname, "..");
 
 // Directorios a crear
 const directories = [

@@ -17,7 +17,7 @@ import {
 import type { Request, Response } from "express";
 import { Router } from "express";
 import jwt from "jsonwebtoken";
-import { firestore } from "firebase-admin";
+// import { firestore } from "firebase-admin";
 
 export const userRouter = Router();
 
