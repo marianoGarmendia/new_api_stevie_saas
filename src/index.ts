@@ -46,6 +46,9 @@ app.use(
     // Origen permitido
     // "http://localhost:5173"// Permitir localhost para desarrollo
     credentials: true,
+    // Permitir credenciales (cookies, autenticación, etc.)
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    // Métodos HTTP permitidos
   })
 );
 app.use(express.json());
