@@ -80,9 +80,9 @@ const handleFileUpload = async (req: Request, res: Response): Promise<any> => {
       //Voces agregadas a cada fragmento
       const voicesAdded = podcastArray.map((pod, i) => {
         if (i % 2 === 0) {
-          return { ...pod, voice: firstVoice.option.toString() };
+          return { ...pod, voice: firstVoice.option.name.toString() };
         } else {
-          return { ...pod, voice: secondVoice.option.toString() };
+          return { ...pod, voice: secondVoice.option.name.toString() };
         }
       });
 
@@ -198,9 +198,9 @@ const handleFileUpload = async (req: Request, res: Response): Promise<any> => {
       //Voces agregadas a cada fragmento
       const voicesAdded = podcastArray.map((pod, i) => {
         if (i % 2 === 0) {
-          return { ...pod, voice: firstVoice.option.toString() };
+          return { ...pod, voice: firstVoice.option.name.toString() };
         } else {
-          return { ...pod, voice: secondVoice.option.toString() };
+          return { ...pod, voice: secondVoice.option.name.toString() };
         }
       });
 
