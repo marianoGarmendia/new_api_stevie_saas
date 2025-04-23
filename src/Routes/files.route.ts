@@ -46,7 +46,11 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 const handleFileUpload = async (req: Request, res: Response): Promise<any> => {
   console.log("req.body");
-  const { email, instructions, urlValue } = req.body;
+  const { email, instructions, urlValue, firstLocutor, secondLocutor } =
+    req.body;
+
+  const firstVoice = JSON.parse(firstLocutor);
+  const secondVoice = JSON.parse(secondLocutor);
 
   console.log(req.body);
   try {
@@ -76,9 +80,9 @@ const handleFileUpload = async (req: Request, res: Response): Promise<any> => {
       //Voces agregadas a cada fragmento
       const voicesAdded = podcastArray.map((pod, i) => {
         if (i % 2 === 0) {
-          return { ...pod, voice: "Ruben Suarez - Expressive" };
+          return { ...pod, voice: firstVoice.option.toString() };
         } else {
-          return { ...pod, voice: "Valeria - Friendly Woman" };
+          return { ...pod, voice: secondVoice.option.toString() };
         }
       });
 
@@ -194,9 +198,9 @@ const handleFileUpload = async (req: Request, res: Response): Promise<any> => {
       //Voces agregadas a cada fragmento
       const voicesAdded = podcastArray.map((pod, i) => {
         if (i % 2 === 0) {
-          return { ...pod, voice: "Ruben Suarez - Expressive" };
+          return { ...pod, voice: firstVoice.option.toString() };
         } else {
-          return { ...pod, voice: "Valeria - Friendly Woman" };
+          return { ...pod, voice: secondVoice.option.toString() };
         }
       });
 

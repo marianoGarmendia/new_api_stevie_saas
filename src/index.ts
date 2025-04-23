@@ -33,15 +33,18 @@ const app = express();
 //   process.env.FRONTEND_URL, // URL de producción
 //   "http://localhost:5173", // URL local para desarrollo
 // ];
-const FRONTEND_URL = process.env.FRONTEND_URL as string;
+
+// Para produccion descomentar esta linea
+// const FRONTEND_URL = process.env.FRONTEND_URL as string;
+
+// Para desarrollo usar esta linea
+const FRONTEND_URL = "http://localhost:5173";
 
 app.use(
   cors({
-    origin: 
-    FRONTEND_URL
-       // Origen permitido
-      // "http://localhost:5173"// Permitir localhost para desarrollo
-    ,
+    origin: FRONTEND_URL,
+    // Origen permitido
+    // "http://localhost:5173"// Permitir localhost para desarrollo
     credentials: true,
   })
 );

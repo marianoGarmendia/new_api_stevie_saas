@@ -2,7 +2,7 @@ import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { StructuredOutputParser } from "@langchain/core/output_parsers";
 import { type MessageContent } from "@langchain/core/messages";
 // Importar prompts
-import { chatprompt_cine } from "./prompts";
+// import { chatprompt_cine } from "./prompts";
 import { z } from "zod";
 
 // Crear prompt
@@ -12,7 +12,7 @@ const podcastSchema = z.array(
   z.object({
     text: z
       .string()
-      .describe("Texto del podcast que le corresponde a un locutor"),
+      .describe("Texto del podcast que le corresponde a un locutor o locutora"),
     voice: z.string().describe("Nombre del locutor/a que lee el texto"),
   })
 );
