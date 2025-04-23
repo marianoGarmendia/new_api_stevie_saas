@@ -3,11 +3,13 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import fs from "fs";
-
+import dotenv from "dotenv";
 import { userRouter } from "./Routes/users.route";
 import { fileRouter } from "./Routes/files.route";
 // import { create_directory } from "../dir-create";
 // create_directory();
+
+dotenv.config();
 
 // Base path para la raíz del proyecto
 const rootDir = path.resolve(__dirname, "..");
