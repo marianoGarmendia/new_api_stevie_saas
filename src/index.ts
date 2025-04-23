@@ -35,10 +35,10 @@ const app = express();
 // ];
 
 // Para produccion descomentar esta linea
-// const FRONTEND_URL = process.env.FRONTEND_URL as string;
+const FRONTEND_URL = process.env.FRONTEND_URL as string;
 
 // Para desarrollo usar esta linea
-const FRONTEND_URL = "http://localhost:5173";
+// const FRONTEND_URL = "http://localhost:5173";
 
 app.use(
   cors({
