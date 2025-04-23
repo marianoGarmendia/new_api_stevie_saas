@@ -1,4 +1,5 @@
 import { ElevenLabsClient } from "elevenlabs";
+import { writeFile } from "fs/promises";
 
 const elevenlabs = new ElevenLabsClient();
 
@@ -31,5 +32,5 @@ export const createAudioFileFromText = async (
     audioBuffer.byteLength
   );
 
-  await Bun.write(output, uint8Array);
+  await writeFile(output, uint8Array);
 };
