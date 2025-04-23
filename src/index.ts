@@ -1,5 +1,6 @@
 import path from "path";
-import express from "express";
+import * as express from "express";
+
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import fs from "fs";
@@ -50,6 +51,7 @@ app.use(
     credentials: true,
     // Permitir credenciales (cookies, autenticación, etc.)
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     // Métodos HTTP permitidos
   })
 );
